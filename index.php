@@ -7,8 +7,12 @@ $iterator = 0;
 $data = [];
 $num_days = 30;
 $sum_per_day = 0;
+$num_of_inverters = 4;
 
-setlocale(LC_ALL,'de_DE');
+// for canvasjs
+$data_points = [];
+
+setlocale(LC_ALL, 'de_DE');
 ?>
 
 <!doctype html>
@@ -36,10 +40,12 @@ setlocale(LC_ALL,'de_DE');
     <table>
         <tr>
             <th>Date</th>
-            <th>Converter 1</th>
-            <th>Converter 2</th>
-            <th>Converter 3</th>
-            <th>Converter 4</th>
+            <?php
+            for ($i = 0; $i < $num_of_inverters; $i++) {
+                echo "<th>Converter " . $i + 1 . "</th>";
+                $data_points[$i] = [];
+            }
+            ?>
             <th>Total</th>
         </tr>
         <?php
@@ -56,8 +62,9 @@ setlocale(LC_ALL,'de_DE');
             }
             echo sprintf('<td>%d</td>', $data[2] / 1000);
             $sum_per_day = $sum_per_day + $data[2] / 1000;
+            array_push($data_points[$iterator], array("label" => $data[0], "y" => $data[2]/1000));
             $iterator++;
-            if ($iterator == 4) {
+            if ($iterator == $num_of_inverters) {
                 echo sprintf('<td>%d</td>', $sum_per_day);
                 print("</tr>");
                 $iterator = 0;
@@ -69,6 +76,25 @@ setlocale(LC_ALL,'de_DE');
         fclose($file);
         ?>
     </table>
+    <div id="chartContainer" style="height: 370px; width: 100%;"></div>
+    <script>
+        window.onload = function() {
+            var chart = new CanvasJS.Chart("chartContainer", {
+                axisY: {
+                    title: "KWh"
+                },
+                data: [
+                    <?php
+                    for ($i = 0; $i < $num_of_inverters; $i++) {
+                        echo '{ type: "line", dataPoints: ' . json_encode($data_points[$i], JSON_NUMERIC_CHECK) . '},';
+                    }
+                    ?>
+                ]
+            });
+            chart.render();
+        }
+    </script>
+    <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
 </body>
 
 </html>
