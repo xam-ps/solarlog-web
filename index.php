@@ -88,7 +88,7 @@ setlocale(LC_ALL, 'de_DE');
             font-size: 0.8rem;
         }
 
-        #perDayPage {
+        #perMonthPage {
             display: none;
         }
     </style>
