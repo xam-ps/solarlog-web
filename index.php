@@ -1,12 +1,21 @@
 <?php
-$filename = "brautlach/days.csv";
-$file = fopen($filename, "r");
-fgets($file);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+$filenameDaily = "brautlach/days.csv";
+$dailyFile = fopen($filenameDaily, "r");
+fgets($dailyFile);
+
+$filenameMonthly = "brautlach/months.csv";
+$monthlyFile = fopen($filenameMonthly, "r");
+fgets($monthlyFile);
 
 $iterator = 0;
 $data = [];
 $num_days = 30;
 $sum_per_day = 0;
+$sum_per_month = 0;
 $num_of_inverters = 4;
 
 // for canvasjs
@@ -40,6 +49,7 @@ setlocale(LC_ALL, 'de_DE');
             overflow-y: scroll;
             height: 268px;
         }
+
         table {
             margin: 0 auto;
         }
@@ -75,6 +85,11 @@ setlocale(LC_ALL, 'de_DE');
 
         #update {
             text-align: right;
+            font-size: 0.8rem;
+        }
+
+        #perDayPage {
+            display: none;
         }
     </style>
 </head>
@@ -82,8 +97,8 @@ setlocale(LC_ALL, 'de_DE');
 <body>
     <p id="update">
         <?php
-        if (file_exists($filename)) {
-            echo "Last update: " . date("d.m.Y H:i", filemtime($filename)) . "<br><br>";
+        if (file_exists($filenameDaily)) {
+            echo "Last update: " . date("d.m.Y H:i", filemtime($filenameDaily)) . "<br><br>";
         }
         ?>
     </p>
@@ -109,11 +124,11 @@ setlocale(LC_ALL, 'de_DE');
                 </tr>
                 <?php
 
-                while (!feof($file)) {
+                while (!feof($dailyFile)) {
                     if ($num_days < 1) {
                         break;
                     }
-                    $data = fgetcsv($file, null, ';');
+                    $data = fgetcsv($dailyFile, null, ';');
                     if (!$iterator) {
                         print("<tr><td>");
                         print($data[0]);
@@ -132,14 +147,50 @@ setlocale(LC_ALL, 'de_DE');
                     }
                 }
 
-                fclose($file);
+                fclose($dailyFile);
                 ?>
             </table>
         </div>
         <div id="chartContainer" style="height: 370px; width: 100%;"></div>
     </div>
     <div id="perMonthPage">
+        <h2>Übersicht über die letzten Monate</h2>
+        <div id="tableWrapper">
+            <table>
+                <tr>
+                    <th>Date</th>
+                    <?php
+                    for ($i = 0; $i < $num_of_inverters; $i++) {
+                        echo "<th>Converter " . $i + 1 . "</th>";
+                    }
+                    ?>
+                    <th>Total</th>
+                </tr>
+                <?php
+                $iterator = 0;
 
+                while (!feof($monthlyFile)) {
+                    $data = fgetcsv($monthlyFile, null, ';');
+                    if (!$iterator) {
+                        print("<tr><td>");
+                        print(substr(($data[0] ?? 0), 3));
+                        print("</td>");
+                    }
+                    echo sprintf('<td>%d</td>', ($data[2] ?? 0) / 1000);
+                    $sum_per_month = $sum_per_month + ($data[2] ?? 0) / 1000;
+                    $iterator++;
+                    if ($iterator == $num_of_inverters) {
+                        echo sprintf('<td>%d</td>', $sum_per_month);
+                        print("</tr>");
+                        $iterator = 0;
+                        $sum_per_month = 0;
+                    }
+                }
+
+                fclose($monthlyFile);
+                ?>
+            </table>
+        </div>
     </div>
 
     <script>
