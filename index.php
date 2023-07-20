@@ -20,8 +20,26 @@ $num_of_inverters = 4;
 
 // for canvasjs
 $data_points = [];
+for ($i = 0; $i < $num_of_inverters; $i++) {
+    $data_points[$i] = [];
+}
 
 setlocale(LC_ALL, 'de_DE');
+
+function makeTableHead($num_of_inverters)
+{
+?>
+    <tr>
+        <th>Date</th>
+        <?php
+        for ($i = 0; $i < $num_of_inverters; $i++) {
+            echo "<th>Inverter " . $i + 1 . "</th>";
+        }
+        ?>
+        <th>Total</th>
+    </tr>
+<?php
+}
 ?>
 
 <!doctype html>
@@ -112,17 +130,8 @@ setlocale(LC_ALL, 'de_DE');
         <h2>Übersicht über die letzten 30 Tage</h2>
         <div id="tableWrapper">
             <table>
-                <tr>
-                    <th>Date</th>
-                    <?php
-                    for ($i = 0; $i < $num_of_inverters; $i++) {
-                        echo "<th>Converter " . $i + 1 . "</th>";
-                        $data_points[$i] = [];
-                    }
-                    ?>
-                    <th>Total</th>
-                </tr>
                 <?php
+                makeTableHead($num_of_inverters);
 
                 while (!feof($dailyFile)) {
                     if ($num_days < 1) {
@@ -157,16 +166,9 @@ setlocale(LC_ALL, 'de_DE');
         <h2>Übersicht über die letzten Monate</h2>
         <div id="tableWrapper">
             <table>
-                <tr>
-                    <th>Date</th>
-                    <?php
-                    for ($i = 0; $i < $num_of_inverters; $i++) {
-                        echo "<th>Converter " . $i + 1 . "</th>";
-                    }
-                    ?>
-                    <th>Total</th>
-                </tr>
                 <?php
+                makeTableHead($num_of_inverters);
+
                 $iterator = 0;
 
                 while (!feof($monthlyFile)) {
